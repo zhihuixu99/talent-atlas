@@ -10,16 +10,18 @@
         body { background: #000; color: #fff; font-family: 'Noto+Sans+SC', sans-serif; overflow: hidden; margin: 0; }
         .gradient-bg { background: radial-gradient(circle at 50% -10%, #1e3a8a 0%, #000 85%); height: 100vh; }
         
-        .card-container { perspective: 1200px; width: 310px; height: 460px; margin-top: 20px; }
+        /* 3D 卡片系统 */
+        .card-container { perspective: 1200px; width: 310px; height: 480px; margin: 20px auto; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; cursor: pointer; }
         .card-inner.is-flipped { transform: rotateY(180deg); }
-        .card-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 32px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.03); backdrop-filter: blur(25px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
-        .card-back { transform: rotateY(180deg); background: rgba(255,255,255,0.05); }
+        .card-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 32px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.03); backdrop-filter: blur(25px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 35px; text-align: center; }
+        .card-back { transform: rotateY(180deg); background: rgba(255,255,255,0.06); }
         
-        .btn-choice { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        /* UI 动效 */
+        .btn-choice { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; border-radius: 16px; padding: 20px 24px; font-size: 13px; text-align: left; line-height: 1.5; }
         .btn-choice:active { background: #fff; color: #000; transform: scale(0.98); }
-        .progress-bar { height: 2px; background: rgba(255,255,255,0.1); }
-        .progress-fill { height: 100%; background: #3b82f6; box-shadow: 0 0 10px #3b82f6; transition: width 0.4s; }
+        .progress-bar { height: 2px; background: rgba(255,255,255,0.1); width: 100%; margin-bottom: 40px; }
+        .progress-fill { height: 100%; background: #3b82f6; box-shadow: 0 0 15px #3b82f6; transition: width 0.4s; }
         .fade-in { animation: fadeIn 0.6s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -38,7 +40,7 @@
     let currentIdx = 0;
     let scores = { L: 0, E: 0, A: 0, V: 0 };
     let answeredIds = [];
-    let activeCode = ""; // 当前登录的码
+    let activeCode = "";
 
     function render(h) { document.getElementById('root').innerHTML = h; }
 
@@ -47,17 +49,17 @@
             const res = await fetch(CONFIG.questionsPath);
             fullBank = await res.json();
             showHome();
-        } catch(e) { render(`<div class='h-full flex items-center justify-center text-red-400 text-xs tracking-widest uppercase'>资源加载失败</div>`); }
+        } catch(e) { render(`<div class='h-full flex items-center justify-center opacity-50 text-xs tracking-widest uppercase'>资源同步中...</div>`); }
     }
 
     function showHome() {
         render(`
             <div class="flex-1 flex flex-col justify-between py-16 fade-in text-center">
                 <div class="mt-10">
-                    <h1 class="text-4xl font-black tracking-[0.5em] mb-4">天赋图谱</h1>
-                    <p class="text-[9px] text-white/20 tracking-[0.4em] uppercase">Individual Probing System</p>
+                    <h1 class="text-4xl font-black tracking-[0.5em] mb-4 italic">天赋图谱</h1>
+                    <p class="text-[9px] text-white/20 tracking-[0.4em] uppercase">90-Step Neural Probing</p>
                 </div>
-                <button onclick="showAuth()" class="w-full py-6 bg-white text-black font-bold rounded-2xl tracking-[0.8em] text-sm">激活或继续</button>
+                <button onclick="showAuth()" class="w-full py-6 bg-white text-black font-bold rounded-2xl tracking-[0.8em] text-sm shadow-[0_0_30px_rgba(255,255,255,0.2)]">身份核销</button>
             </div>
         `);
     }
@@ -65,121 +67,116 @@
     function showAuth() {
         render(`
             <div class="flex-1 flex flex-col justify-center fade-in px-4">
-                <input id="authInput" type="text" placeholder="ENTER CODE" class="bg-transparent border-b border-white/20 w-full py-6 text-center text-xl tracking-[0.3em] outline-none mb-16 uppercase focus:border-blue-500 transition-colors">
-                <button id="verifyBtn" onclick="handleVerify()" class="w-full py-6 bg-blue-600 rounded-2xl font-bold tracking-[0.5em] text-xs">验证身份</button>
+                <input id="authInput" type="text" placeholder="ENTER SERIAL CODE" class="bg-transparent border-b border-white/20 w-full py-6 text-center text-xl tracking-[0.2em] outline-none mb-16 uppercase focus:border-blue-500 transition-colors font-light">
+                <button id="verifyBtn" onclick="handleVerify()" class="w-full py-6 bg-blue-600 rounded-2xl font-bold tracking-[0.5em] text-xs shadow-lg shadow-blue-900/40">验证并进入</button>
             </div>
         `);
     }
 
-    // --- 核心：带断点续传的验证逻辑 ---
     async function handleVerify() {
         const input = document.getElementById('authInput').value.trim().toUpperCase();
         const btn = document.getElementById('verifyBtn');
         if(!input) return;
 
         try {
-            btn.innerText = "正在验证...";
-            btn.disabled = true;
-            
-            // 1. 获取码库
+            btn.innerText = "VERIFYING..."; btn.disabled = true;
             const res = await fetch(CONFIG.codesPath);
             const data = await res.json();
             
             if(data.active_codes.includes(input)) {
                 activeCode = input;
-                // 2. 检查本地是否有该码的进度记录
-                const savedProgress = JSON.parse(localStorage.getItem(`progress_${activeCode}`));
-                
-                if(savedProgress) {
-                    // 恢复进度
-                    scores = savedProgress.scores;
-                    currentIdx = savedProgress.currentIdx;
-                    answeredIds = savedProgress.answeredIds;
-                    alert(`✅ 欢迎回来，已为您跳转至第 ${currentIdx + 1} 题`);
+                const saved = JSON.parse(localStorage.getItem(`progress_${activeCode}`));
+                if(saved) {
+                    scores = saved.scores; currentIdx = saved.currentIdx; answeredIds = saved.answeredIds;
+                    alert(`✅ 已恢复至进度: ${currentIdx + 1}/90`);
                 }
                 startQuiz();
             } else {
-                alert("⚠️ 授权码无效");
-                btn.innerText = "验证身份"; btn.disabled = false;
+                alert("⚠️ 序列号无效"); btn.innerText = "验证并进入"; btn.disabled = false;
             }
-        } catch(e) { alert("无法连接服务器"); btn.disabled = false; }
+        } catch(e) { alert("网络异常"); btn.disabled = false; }
     }
 
     function saveProgress() {
-        const progress = { scores, currentIdx, answeredIds };
-        localStorage.setItem(`progress_${activeCode}`, JSON.stringify(progress));
+        localStorage.setItem(`progress_${activeCode}`, JSON.stringify({ scores, currentIdx, answeredIds }));
     }
 
     function startQuiz() {
-        let pool;
-        if(currentIdx < 30) {
-            pool = fullBank.baseline;
-        } else {
-            const top = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
-            pool = fullBank[`deep_${top}`] || fullBank.baseline;
-        }
+        let pool = (currentIdx < 30) ? fullBank.baseline : 
+                   fullBank[`deep_${Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b)}`] || fullBank.baseline;
 
         const available = pool.filter(q => !answeredIds.includes(q.id));
         const q = available[Math.floor(Math.random() * available.length)] || pool[0];
         
         render(`
             <div class="flex-1 flex flex-col fade-in">
-                <div class="progress-bar mb-12"><div class="progress-fill" style="width:${(currentIdx/CONFIG.totalSteps)*100}%"></div></div>
-                <div class="text-[10px] text-blue-500 font-bold mb-4 tracking-widest">Step ${currentIdx+1}/${CONFIG.totalSteps}</div>
-                <h2 class="text-xl font-light mb-16 leading-relaxed">${q.q}</h2>
+                <div class="progress-bar"><div class="progress-fill" style="width:${(currentIdx/CONFIG.totalSteps)*100}%"></div></div>
+                <div class="text-[10px] text-blue-500 font-bold mb-8 tracking-[0.3em] uppercase">Probe ${currentIdx+1} of ${CONFIG.totalSteps}</div>
+                <h2 class="text-xl font-medium mb-16 leading-relaxed text-white/90">${q.q}</h2>
                 <div class="space-y-4">
-                    <button onclick='submitAnswer("${q.id}", ${JSON.stringify(q.a.s)})' class="btn-choice w-full py-6 rounded-2xl text-[11px] px-8 text-left leading-relaxed">${q.a.t}</button>
-                    <button onclick='submitAnswer("${q.id}", ${JSON.stringify(q.b.s)})' class="btn-choice w-full py-6 rounded-2xl text-[11px] px-8 text-left leading-relaxed">${q.b.t}</button>
+                    <button onclick='submit("${q.id}", ${JSON.stringify(q.a.s)})' class="btn-choice w-full">${q.a.t}</button>
+                    <button onclick='submit("${q.id}", ${JSON.stringify(q.b.s)})' class="btn-choice w-full">${q.b.t}</button>
                 </div>
             </div>
         `);
     }
 
-    function submitAnswer(id, s) {
+    function submit(id, s) {
         for(let k in s) scores[k] += s[k];
-        answeredIds.push(id);
-        currentIdx++;
-        
-        // 关键：每答一题自动保存进度
+        answeredIds.push(id); currentIdx++;
         saveProgress();
-
         if(currentIdx < CONFIG.totalSteps) startQuiz();
         else showFinalLoading();
     }
 
     function showFinalLoading() {
-        render(`<div class="flex-1 flex flex-col items-center justify-center animate-pulse text-center"><div class="w-6 h-6 border border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div><p class="text-[9px] tracking-[0.6em] text-blue-400">正在生成报告...</p></div>`);
-        setTimeout(showResult, 2500);
+        render(`<div class="flex-1 flex flex-col items-center justify-center animate-pulse"><div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div><p class="text-[10px] tracking-[0.5em] text-blue-400 uppercase font-light">锁定16型人格原件...</p></div>`);
+        setTimeout(showResult, 3000);
     }
 
     function showResult() {
-        const top = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
-        const meta = {
-            L: { t: "逻辑构造师", d: "你倾向于将世界还原为数字与逻辑。在极端混沌中，你依然能一眼识破系统的漏洞。", c: "#3b82f6" },
-            E: { t: "共情感知者", d: "你的天赋在于对人性的深度洞察。你能捕捉到空气中微弱的情绪涟漪，它是你的雷达。", c: "#10b981" },
-            A: { t: "权力博弈者", d: "你对秩序与支配有着近乎本能的渴望。结果是唯一的度量衡，规则只是工具。", c: "#f59e0b" },
-            V: { t: "高维观测者", d: "你不属于任何具体的阵营。你站在更高的维度审视规则，预测那些尚未发生的坍塌。", c: "#8b5cf6" }
-        }[top];
+        const sorted = Object.keys(scores).sort((a,b) => scores[b] - scores[a]);
+        const code = sorted.join('');
+        const typeMap = {
+            "LAEV": { t: "铁血统帅", c: "#3b82f6", d: "极致的理性扩张者，擅长在复杂规则中建立自己的帝国。逻辑与野心并存。" },
+            "LAVE": { t: "战略架构师", c: "#60a5fa", d: "审视全局，用逻辑编织网络，将一切变数纳入可控范围。" },
+            "LVEA": { t: "深空引航员", c: "#2563eb", d: "洞察规律但不执迷权力，是迷雾中指引方向的逻辑灯塔。" },
+            "LVAE": { t: "冷峻解构者", c: "#1d4ed8", d: "拆解一切虚伪表象，世界在你眼里只是跳动的底层逻辑代码。" },
+            "ELAV": { t: "灵魂共鸣者", c: "#10b981", d: "极强的感性穿透力，能直接触及他人内心最深处的恐惧与渴望。" },
+            "EVLA": { t: "圣光祭司", c: "#34d399", d: "用共情维系秩序，在混乱的荒原中建立持久的情感避风港。" },
+            "EALV": { t: "感性煽动家", c: "#059669", d: "深谙人心，擅长用情感作为支点，撬动巨大的社会与人心资源。" },
+            "EVAL": { t: "流浪艺术家", c: "#065f46", d: "拒绝定义，世界是你的感官实验场，只为瞬间的灵魂共振而活。" },
+            "ALEV": { t: "资源掠夺者", c: "#f59e0b", d: "对目标的渴望近乎贪婪，结果是评价你存在价值的唯一准则。" },
+            "ALVE": { t: "秩序重塑者", c: "#fbbf24", d: "不满现状，试图用强力手段推倒旧世界，建立属于你的新规则。" },
+            "AEVL": { t: "欲望弄潮儿", c: "#d97706", d: "在名利场中游刃有余，精准捕捉每一个能够让你实现阶跃的机会。" },
+            "AELV": { t: "巅峰攀登者", c: "#b45309", d: "享受征服的快感，每一座高峰都只是通往下一个顶点的阶梯。" },
+            "VLEA": { t: "隐世智者", c: "#8b5cf6", d: "站在时间的维度观测众生，这种抽离感让你具备了近乎神性的预判。" },
+            "VELA": { t: "文明观测员", c: "#a78bfa", d: "热爱观测人性的演变，对你而言，人类文明只是一场有趣的生存实验。" },
+            "VALE": { t: "异次元极客", c: "#7c3aed", d: "思维跳脱空间，总能提出让同时代人感到荒诞却无比精准的预言。" },
+            "VAEL": { t: "虚无执行官", c: "#5b21b6", d: "看透了结果的无意义，行动上反而具备了无可撼动的冷静与纯粹。" }
+        };
+        const meta = typeMap[code] || typeMap["LAEV"];
 
         render(`
             <div class="flex-1 flex flex-col items-center justify-center fade-in">
                 <div class="card-container" onclick="this.querySelector('.card-inner').classList.toggle('is-flipped')">
                     <div class="card-inner">
                         <div class="card-face">
-                            <div class="w-16 h-16 border border-dashed rounded-full flex items-center justify-center mb-8" style="border-color:${meta.c}">
-                                <div class="w-2 h-2 rounded-full animate-ping" style="background:${meta.c}"></div>
+                            <div class="w-20 h-20 border-2 border-dashed rounded-full flex items-center justify-center mb-8" style="border-color:${meta.c}44">
+                                <div class="text-[12px] font-bold tracking-tighter" style="color:${meta.c}">${code}</div>
                             </div>
-                            <h3 class="text-2xl font-black tracking-[0.4em] mb-4 uppercase">${meta.t}</h3>
-                            <p class="text-[8px] opacity-30 tracking-[0.3em] uppercase">Talent Atlas Certified</p>
+                            <h3 class="text-3xl font-black tracking-[0.3em] mb-4">${meta.t}</h3>
+                            <p class="text-[8px] opacity-20 tracking-[0.4em] uppercase">Verified Talent Atlas Pro</p>
                         </div>
-                        <div class="card-face card-back text-center">
-                            <h4 class="text-[10px] font-bold mb-8 uppercase tracking-[0.4em]" style="color:${meta.c}">内核解构</h4>
-                            <p class="text-xs leading-loose text-white/70 px-2">${meta.d}</p>
-                            <div class="mt-auto pt-8 border-t border-white/5 w-full text-[7px] opacity-20 uppercase tracking-[0.5em]">Verified Code: ${activeCode}</div>
+                        <div class="card-face card-back px-10">
+                            <h4 class="text-[10px] font-bold mb-8 uppercase tracking-[0.5em]" style="color:${meta.c}">内核解构</h4>
+                            <p class="text-[13px] leading-relaxed text-white/70 text-justify font-light italic">"${meta.d}"</p>
+                            <div class="mt-auto pt-8 border-t border-white/5 w-full text-[8px] opacity-20 tracking-[0.2em] uppercase">Auth: ${activeCode}</div>
                         </div>
                     </div>
                 </div>
-                <p class="mt-10 text-[8px] text-white/20 tracking-[0.6em] uppercase animate-pulse">Tap Card to Reveal</p>
+                <p class="mt-12 text-[9px] text-white/30 tracking-[0.5em] uppercase animate-pulse">点击翻转卡片</p>
+                <button onclick="location.reload()" class="mt-8 opacity-30 text-[10px] hover:opacity-100 transition-opacity uppercase tracking-widest">Restart Session</button>
             </div>
         `);
     }
