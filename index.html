@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天赋图谱 | Talent Atlas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@200;500&display=swap');
+        body { background: #000; color: #fff; font-family: 'Noto+Sans+SC', sans-serif; margin: 0; overflow: hidden; }
+        .gradient-bg { background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000 100%); }
+        input[type=range] { -webkit-appearance: none; background: rgba(255,255,255,0.1); height: 2px; width: 100%; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+    </style>
+</head>
+<body class="gradient-bg h-screen w-screen flex flex-col items-center justify-center p-6 text-center">
+    <div id="root" class="w-full max-w-md h-full flex flex-col justify-between py-12">
+        <div id="home-view">
+            <h1 style="letter-spacing: 0.3em;" class="text-3xl font-extralight mb-4">天赋图谱</h1>
+            <p class="text-white/30 text-[10px] tracking-[0.5em] mb-20">TALENT ATLAS V2.0</p>
+            <button onclick="startAuth()" class="px-12 py-4 border border-white/20 rounded-full text-xs tracking-[0.5em] hover:bg-white hover:text-black transition-all">开启觉醒</button>
+        </div>
+    </div>
+
+    <script>
+        // 核心逻辑：这里我先放前几题作为演示，部署成功后你可以随时在 GitHub 网页上修改这个列表
+        const questions = [
+            { id: 1, type: 'choice', q: '你的灵魂动力源更像是？', a: '精密运行的冷逻辑', b: '滚烫跳跃的直觉' },
+            { id: 2, type: 'choice', q: '在人群中，你更习惯？', a: '透明的观察者', b: '发光的参与者' },
+            { id: 3, type: 'slider', q: '处理信息时，你更倾向于？', left: '拆解每一个零件', right: '观察整体的轮廓' }
+        ];
+
+        function startAuth() {
+            document.getElementById('root').innerHTML = `
+                <div class="flex-1 flex flex-col justify-center">
+                    <h2 class="text-sm tracking-widest mb-10 text-white/50">输入通行凭证</h2>
+                    <input id="code-input" type="text" placeholder="10位激活码" class="bg-transparent border-b border-white/20 w-full py-4 text-center tracking-[0.3em] outline-none focus:border-white transition-all">
+                    <button onclick="checkCode()" class="mt-12 text-[10px] tracking-[0.5em] opacity-40 hover:opacity-100">VERIFY →</button>
+                </div>
+            `;
+        }
+
+        function checkCode() {
+            // 这里暂设为点击即通过，方便你测试。后续可以接入 Cloudflare KV
+            showQuiz(0);
+        }
+
+        function showQuiz(index) {
+            const q = questions[index];
+            let content = '';
+            if(q.type === 'choice') {
+                content = `
+                    <div class="flex-1 flex flex-col justify-center text-left">
+                        <div class="text-[8px] text-white/20 mb-8 tracking-widest font-mono">STEP ${index + 1} / 90</div>
+                        <h2 class="text-lg font-light leading-loose mb-16">${q.q}</h2>
+                        <div class="space-y-4">
+                            <button onclick="next(${index})" class="w-full py-5 border border-white/10 rounded-xl text-xs tracking-widest hover:bg-white/5 transition-all">${q.a}</button>
+                            <button onclick="next(${index})" class="w-full py-5 border border-white/10 rounded-xl text-xs tracking-widest hover:bg-white/5 transition-all">${q.b}</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                content = `
+                    <div class="flex-1 flex flex-col justify-center text-left">
+                        <div class="text-[8px] text-white/20 mb-8 tracking-widest font-mono">STEP ${index + 1} / 90</div>
+                        <h2 class="text-lg font-light leading-loose mb-20">${q.q}</h2>
+                        <input type="range" min="1" max="5" value="3" class="mb-6">
+                        <div class="flex justify-between text-[8px] text-white/30 tracking-widest">
+                            <span>${q.left}</span>
+                            <span>${q.right}</span>
+                        </div>
+                        <button onclick="next(${index})" class="mt-20 self-end text-[10px] tracking-[0.4em] opacity-40 hover:opacity-100">NEXT →</button>
+                    </div>
+                `;
+            }
+            document.getElementById('root').innerHTML = content;
+        }
+
+        function next(index) {
+            if(index < questions.length - 1) {
+                showQuiz(index + 1);
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            // 最终赛博卡片呈现
+            document.getElementById('root').innerHTML = `
+                <div class="flex-1 flex flex-col items-center justify-center">
+                    <div class="w-64 aspect-[5/8] bg-slate-900 border border-white/10 rounded-2xl p-8 relative overflow-hidden shadow-2xl">
+                        <div class="absolute top-0 right-0 p-4 text-[6px] opacity-20 font-mono">NODE_9527</div>
+                        <div class="mt-16 text-center">
+                            <div class="text-[8px] tracking-[0.4em] text-blue-400 mb-2">ARCHETYPE</div>
+                            <h3 class="text-xl tracking-[0.2em] font-bold">秩序缝补者</h3>
+                            <div class="mt-4 flex flex-wrap justify-center gap-1">
+                                <span class="text-[6px] border border-white/10 px-2 py-1">#逻辑裂缝</span>
+                                <span class="text-[6px] border border-white/10 px-2 py-1">#深海观察</span>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-10 left-6 right-6 text-center">
+                            <div class="h-[1px] bg-white/5 w-full mb-4"></div>
+                            <p class="text-[9px] leading-relaxed text-white/40 italic">“在混乱的尘埃中，你总能发现那根决定命运的丝线。”</p>
+                        </div>
+                    </div>
+                    <button onclick="location.reload()" class="mt-12 text-[8px] tracking-[0.5em] text-white/20">REBOOT SYSTEM</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
