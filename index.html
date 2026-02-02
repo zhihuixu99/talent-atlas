@@ -24,21 +24,63 @@
             font-weight: 900;
         }
 
-        .author-tag {
-            font-family: 'Playfair Display', serif;
-            letter-spacing: 0.2em;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            padding: 2px 20px;
-        }
-
+        /* 核心动效：流光按钮 */
         .cta-button {
+            position: relative;
             background: #ffffff;
             color: #000;
-            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4);
+            overflow: hidden;
             font-weight: 600;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 0 0 rgba(255,255,255,0);
         }
-        .cta-button:active { transform: scale(0.97); }
+
+        /* 呼吸光圈动画 */
+        .btn-glow {
+            animation: pulse-glow 3s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
+        /* 流光掠影效果 */
+        .cta-button::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 20%;
+            height: 200%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(30deg);
+            animation: shine 4s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -60%; }
+            20% { left: 120%; }
+            100% { left: 120%; }
+        }
+
+        .cta-button:active {
+            transform: scale(0.95);
+        }
+
+        /* 验证按钮：能量蓝色光感 */
+        .verify-btn {
+            background: #2563eb;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .verify-btn:active {
+            transform: translateY(2px);
+            filter: brightness(1.2);
+        }
 
         .glass-card {
             background: rgba(255, 255, 255, 0.04);
@@ -46,11 +88,8 @@
             backdrop-filter: blur(20px);
         }
 
-        .input-accent {
-            border-bottom: 2px solid #3b82f6;
-            color: #fff;
-            font-size: 1.4rem;
-        }
+        .fade-in { animation: fadeIn 1s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body class="gradient-bg">
@@ -59,14 +98,14 @@
         <div id="home-view" class="flex flex-col h-full fade-in text-center">
             <header class="pt-10 mb-8">
                 <h1 class="main-title text-4xl mb-2 ml-4">天赋图谱</h1>
-                <div class="author-tag text-[10px] text-white/40 italic mb-6">
+                <div class="text-[10px] text-white/40 italic mb-6 tracking-[0.2em] font-serif">
                     Curated by <span class="text-white/70">zhihuixu</span>
                 </div>
                 <div class="h-[1px] w-8 bg-blue-500/50 mx-auto"></div>
             </header>
 
             <div class="mb-10">
-                <button onclick="startAuth()" class="cta-button w-full py-5 rounded-2xl text-base tracking-[0.6em] uppercase">
+                <button onclick="startAuth()" class="cta-button btn-glow w-full py-5 rounded-2xl text-base tracking-[0.6em] uppercase">
                     开启觉醒之旅
                 </button>
                 <div class="mt-4 flex justify-between px-2 text-[9px] text-white/30 tracking-[0.3em] font-medium uppercase">
@@ -79,17 +118,15 @@
                 <div class="glass-card p-5 rounded-2xl text-left">
                     <h4 class="text-blue-400 text-[10px] font-bold mb-2 tracking-widest uppercase">核心价值</h4>
                     <p class="text-[12px] leading-relaxed text-white/80 font-light">
-                        基于 zhihuixu 构建的动态逻辑引擎，深度探测你的潜在特长，生成独一无二的赛博身份标识。
+                        通过 zhihuixu 构建的动态逻辑引擎，深度探测你的潜在特长，生成独一无二的赛博身份标识。
                     </p>
                 </div>
             </section>
 
             <footer class="pt-6 border-t border-white/10 pb-4">
-                <div class="text-[9px] text-white/20 leading-relaxed space-y-2">
-                    <p>【免责声明】测评基于统计学模型推演，结果仅供自我认知参考，不构成专业诊断建议。</p>
-                    <p class="text-center opacity-40 tracking-tighter">
-                        Created by <span class="text-white/60">zhihuixu</span> | © 2026 Talent Atlas Lab.
-                    </p>
+                <div class="text-[9px] text-white/20 leading-relaxed space-y-2 text-center">
+                    <p>【免责声明】结果基于统计模型，仅供自我探索参考。</p>
+                    <p class="opacity-40">Created by zhihuixu | © 2026</p>
                 </div>
             </footer>
         </div>
@@ -100,34 +137,35 @@
 
         function startAuth() {
             render(`
-                <div class="flex-1 flex flex-col justify-center animate-fade-in text-center p-4">
+                <div class="flex-1 flex flex-col justify-center fade-in text-center p-4">
                     <h2 class="text-xs tracking-[0.5em] mb-16 text-blue-500 uppercase font-bold">Identity Access</h2>
-                    <div class="space-y-6 text-center">
-                        <input id="code-input" type="text" placeholder="请输入10位兑换码" 
-                            class="bg-transparent input-accent w-full py-4 text-center tracking-[0.2em] outline-none transition-all placeholder:text-white/10">
+                    <div class="space-y-6">
+                        <input id="code-input" type="text" placeholder="输入10位激活码" 
+                            class="bg-transparent border-b-2 border-blue-900 focus:border-blue-500 w-full py-4 text-center text-xl tracking-[0.2em] outline-none transition-all placeholder:text-white/10">
                         <p class="text-[9px] text-white/20 tracking-widest">请通过 zhihuixu 官方渠道获取通行凭证</p>
                     </div>
-                    <button onclick="showQuiz(0)" class="mt-20 w-full py-4 bg-blue-600 text-white rounded-xl text-sm font-bold tracking-[0.6em] shadow-xl shadow-blue-900/30 active:scale-95 transition-all">
+                    <button onclick="showQuiz(0)" class="verify-btn mt-20 w-full py-4 text-white rounded-xl text-sm font-bold tracking-[0.6em] shadow-xl shadow-blue-900/30">
                         验证身份
                     </button>
-                    <button onclick="location.reload()" class="mt-10 text-[9px] text-white/20 tracking-widest hover:text-white transition-all uppercase underline underline-offset-8">← BACK TO HOME</button>
+                    <button onclick="location.reload()" class="mt-10 text-[9px] text-white/20 tracking-widest hover:text-white uppercase underline underline-offset-8 transition-all">← BACK TO HOME</button>
                 </div>
             `);
         }
 
-        // 占位逻辑，等待注入完整题库
-        const questions = [{ q: '你的灵魂动力源更像是？', a: '精密运行的冷逻辑', b: '滚烫跳跃的直觉' }];
+        // 占位逻辑
         function showQuiz(idx) {
-            render(`<div class="flex-1 flex flex-col justify-center text-left p-4 fade-in">
-                <div class="text-[8px] text-blue-500 mb-8 tracking-[0.4em] font-mono uppercase">Phase 01 / 90</div>
-                <h2 class="text-2xl font-light leading-snug mb-16 text-white">${questions[0].q}</h2>
-                <div class="space-y-4">
-                    <button onclick="next()" class="w-full py-6 bg-white/5 border border-white/10 rounded-2xl text-xs tracking-widest hover:bg-white hover:text-black transition-all px-8 text-left">A. ${questions[0].a}</button>
-                    <button onclick="next()" class="w-full py-6 bg-white/5 border border-white/10 rounded-2xl text-xs tracking-widest hover:bg-white hover:text-black transition-all px-8 text-left">B. ${questions[0].b}</button>
+            render(`
+                <div class="flex-1 flex flex-col justify-center text-left p-4 fade-in">
+                    <div class="text-[8px] text-blue-500 mb-8 tracking-[0.4em] font-mono uppercase font-bold">Phase 01 / 90</div>
+                    <h2 class="text-2xl font-light leading-snug mb-16 text-white italic">你的灵魂动力源更像是？</h2>
+                    <div class="space-y-4 text-center">
+                        <button onclick="next()" class="w-full py-6 bg-white/5 border border-white/10 rounded-2xl text-xs tracking-[0.2em] hover:bg-white hover:text-black transition-all px-8 text-left">精密运行的冷逻辑</button>
+                        <button onclick="next()" class="w-full py-6 bg-white/5 border border-white/10 rounded-2xl text-xs tracking-[0.2em] hover:bg-white hover:text-black transition-all px-8 text-left">滚烫跳跃的直觉</button>
+                    </div>
                 </div>
-            </div>`);
+            `);
         }
-        function next() { alert('代码逻辑已准备就绪，请等待后续题库注入。'); location.reload(); }
+        function next() { alert('激活成功！主理人 zhihuixu 正在为您加载核心算法...'); location.reload(); }
     </script>
 </body>
 </html>
