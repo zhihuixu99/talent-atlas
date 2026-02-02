@@ -6,146 +6,143 @@
     <title>天赋图谱 | Talent Atlas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@200;500;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@200;500;900&family=Playfair+Display:italic&display=swap');
         body { background: #000; color: #fff; font-family: 'Noto+Sans+SC', sans-serif; margin: 0; overflow: hidden; }
-        
-        .gradient-bg { 
-            background: radial-gradient(circle at 50% -10%, #1e3a8a 0%, #000 70%);
-            height: 100vh; display: flex; flex-direction: column;
-        }
-
-        /* 核心价值高亮 */
-        .value-highlight {
-            background: linear-gradient(90deg, #3b82f6, #60a5fa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-        }
-
-        .cta-button {
-            background: #ffffff; color: #000;
-            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4);
-            font-weight: 600; transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        .cta-button:active { transform: scale(0.96); }
-
-        .glass-tag {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* 输入框抖动动画 */
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
+        .gradient-bg { background: radial-gradient(circle at 50% -10%, #1e3a8a 0%, #000 60%); height: 100vh; display: flex; flex-direction: column; }
+        .main-title { letter-spacing: 0.5em; background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.5) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
+        .cta-button { position: relative; background: #ffffff; color: #000; overflow: hidden; font-weight: 600; transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); animation: pulse-glow 3s infinite; }
+        .cta-button::after { content: ""; position: absolute; top: -50%; left: -60%; width: 20%; height: 200%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%); transform: rotate(30deg); animation: shine 4s infinite; }
+        @keyframes shine { 0% { left: -60%; } 20% { left: 120%; } 100% { left: 120%; } }
+        @keyframes pulse-glow { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         .shake { animation: shake 0.3s ease-in-out; border-bottom-color: #ef4444 !important; }
+        .glass-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); backface-visibility: hidden; }
+        .fade-in { animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="gradient-bg">
     <div id="root" class="w-full max-w-md mx-auto flex flex-col h-full p-8">
-        
         <div id="home-view" class="flex flex-col h-full fade-in">
             <header class="pt-8 mb-6 text-center">
-                <h1 style="letter-spacing: 0.5em;" class="text-4xl font-black mb-2 ml-4">天赋图谱</h1>
-                <div class="text-[10px] text-white/40 italic tracking-[0.2em] font-serif">Curated by zhihuixu</div>
+                <h1 class="main-title text-4xl mb-2 ml-4">天赋图谱</h1>
+                <div class="text-[10px] text-white/40 italic tracking-[0.2em]">Curated by zhihuixu</div>
             </header>
-
             <section class="mb-10 text-center">
-                <p class="text-xl font-light leading-snug">
-                    抛弃标签，<span class="value-highlight">拆解你的底层动机。</span><br>
-                    发现那些被你忽略的<span class="value-highlight">昂贵潜质。</span>
-                </p>
+                <p class="text-xl font-light leading-snug">抛弃标签，<span class="text-blue-400 font-bold">拆解底层动机。</span><br>发现那些被你忽略的<span class="text-blue-400 font-bold">昂贵潜质。</span></p>
+                <div class="flex justify-center space-x-3 mt-6">
+                    <span class="bg-white/10 px-4 py-2 rounded-full text-[10px] tracking-widest text-white/70 uppercase">⏱ 15 Mins</span>
+                    <span class="bg-white/10 px-4 py-2 rounded-full text-[10px] tracking-widest text-white/70 uppercase">📊 90 Questions</span>
+                </div>
             </section>
-
-            <div class="flex justify-center space-x-3 mb-8">
-                <span class="glass-tag px-4 py-2 rounded-full text-[10px] tracking-widest text-white/70">⏱ 15 MINS</span>
-                <span class="glass-tag px-4 py-2 rounded-full text-[10px] tracking-widest text-white/70">📊 90 QUESTIONS</span>
-            </div>
-
-            <div class="mb-12">
-                <button onclick="startAuth()" class="cta-button w-full py-5 rounded-2xl text-base tracking-[0.8em] uppercase">
-                    开启觉醒之旅
-                </button>
-            </div>
-
+            <div class="mb-12"><button onclick="startAuth()" class="cta-button w-full py-5 rounded-2xl text-base tracking-[0.8em] uppercase">开启觉醒之旅</button></div>
             <div class="flex-1 space-y-4 overflow-y-auto pr-1">
-                <div class="flex items-start space-x-3 text-white/60">
-                    <span class="text-blue-500 text-lg">✦</span>
-                    <p class="text-[12px] leading-relaxed">这不只是一份报告，更是主理人 zhihuixu 为你定制的个人使用手册。</p>
-                </div>
+                <div class="flex items-start space-x-3 text-white/60 text-[12px] leading-relaxed"><span class="text-blue-500">✦</span><p>这不只是一份报告，更是主理人 zhihuixu 为你定制的个人使用手册。</p></div>
             </div>
-
-            <footer class="pt-6 border-t border-white/10 pb-4 text-center">
-                <div class="text-[9px] text-white/20 leading-relaxed">
-                    <p>由逻辑引擎驱动，深度探测个体独特性</p>
-                    <p class="mt-1 opacity-40">Created by zhihuixu | © 2026</p>
-                </div>
+            <footer class="pt-6 border-t border-white/10 pb-4 text-center text-[9px] text-white/20 space-y-2">
+                <p>【免责声明】结果基于统计模型，仅供自我探索参考。</p>
+                <p class="opacity-40">Created by zhihuixu | © 2026</p>
             </footer>
         </div>
     </div>
 
-    <script>
-        const validCodes = ["XU88888888", "ZHUIHUI666", "ADMIN123"]; // 你的白名单激活码
+<script>
+    const validCodes = ["XU88888888", "ZHUIHUI666", "ADMIN123"];
+    const archetypes = {
+        "LOGIC_ARCHITECT": { title: "逻辑架构师", tags: ["#底层闭环", "#精准定损"], desc: "你进屋第一眼看的不是装修，是那条贴歪了的踢脚线。你对‘低效率’有生理性厌恶。你的潜质在于：能从乱麻中精准抽出关键线索。", truth: "你常觉得周围人脑子慢，这不怪你，是你的处理器频率过高带来的孤独感。", quote: "你不是爱找茬，你是真受不了这世界乱糟糟。", color: "#3b82f6" },
+        "WILD_ALCHEMIST": { title: "野生炼金术士", tags: ["#脑洞漏风", "#跨界重组"], desc: "你脑子里那个世界，比现实精彩多了。你的天赋是‘跨界联想’，能把两个完全不沾边的东西拼出火花。你不是在发呆，你是在跟世界玩‘躲猫猫’。", truth: "你常因为‘想太多’而行动不足，因为你已在大脑里预演了无数个平行宇宙。", quote: "这世上本没有路，想的人多了，我就造了一条。", color: "#8b5cf6" },
+        "EMOTION_SENSOR": { title: "高频传感器", tags: ["#情绪镜像", "#超感官"], desc: "你拥有极高频的情绪模式识别能力。你能读懂那些没说出口的话，进屋不用看脸也能察觉气压。这种‘人间路由器’体质是你最强的人脉杠杆。", truth: "学会‘关机’是你的必修课，否则别人的情绪垃圾会烧掉你的 CPU。", quote: "你不是没主见，你只是太会‘读空气’了。", color: "#10b981" },
+        "AMBITIOUS_PATHFINDER": { title: "野心开拓者", tags: ["#结果导向", "#破局者"], desc: "规则对你只是参考。只要能达目的，你总能绕开那条挤满人的大路。你的潜质在于：在没有路的地方，你这种不按常理出牌的本能极度稀缺。", truth: "别装了，那些弯弯绕绕的情怀打动不了你。你只想要那个确定的结果。", quote: "谈感情伤钱，谈逻辑太慢，直接看结果。", color: "#f59e0b" },
+        "SYSTEM_PURGATORY": { title: "规则解构者", tags: ["#降维打击", "#死磕本质"], desc: "对你来说，规则只是弱者的保护色。你擅长把庞大项目拆成补丁，精准找到系统重启的‘开关’。你这种不带感情的客观，是处理烂摊子的利器。", truth: "你对‘人情世故’的迟钝，其实是你为了保护逻辑纯净而过滤掉的噪音。", quote: "别讲故事，直接把底层的代码逻辑跑给我看。", color: "#2563eb" },
+        "VIBE_DESIGNER": { title: "氛围捕捉位", tags: ["#美学直觉", "#细节控"], desc: "你对‘高级感’有着动物般的直觉。这种‘审美霸权’让你在充满塑料感的商业世界里，自带一种昂贵的稀缺性。", truth: "你对丑的东西会感到物理不适，这让你的生活和审美成本都比别人高。", quote: "如果你不能让它变美，至少别让它变丑。", color: "#d946ef" },
+        "SOUL_SHELTER": { title: "灵魂避难所", tags: ["#极致包容", "#治愈系"], desc: "你有一种魔力，能让别人在你面前不自觉说真话。你不评判，只容器般接纳一切。这种信任感让你在资源交换中拥有隐秘的支配权。", truth: "你总是忙着修补别人的破碎，偶尔也要记得回头打扫自己的房间。", quote: "在我这里，你可以脱掉所有社会性的伪装。", color: "#059669" },
+        "WAR_MACHINE": { title: "高压处理器", tags: ["#极端冷静", "#单点突破"], desc: "越乱的环境你越值钱。当所有人都在焦虑时，你会进入一种近乎冷血的冷静。这种‘定海神针’特质，让你天生就是为危机而生的。", truth: "你不是没有感情，你只是觉得在解决问题之前，感情是多余的负担。", quote: "子弹飞过来的时候，我只想看清它的轨迹。", color: "#dc2626" },
+        "PATTERN_WATCHER": { title: "规律观测员", tags: ["#预见性", "#大局观"], desc: "你总能比别人早三秒预测事物走向。这种‘先知感’让你能避开大多数人必踩的坑，在时代的窄门里提前布局。", truth: "清醒地看着悲剧发生却无法阻止，是你这种‘预测者’最大的宿命悲剧。", quote: "三年前埋下的种子，今天必须开花。", color: "#6366f1" },
+        "SKEPTIC_THINKER": { title: "硬核怀疑论者", tags: ["#反共识", "#批判思维"], desc: "你天生反骨。这种‘反向思考’让你看穿泡沫，在集体狂热中保持那种让人讨厌但有用的清醒。", truth: "你的怀疑不是为了杠，而是因为你太想找到那个绝对稳固的真相了。", quote: "大多数人都在点头的时候，我习惯退后一步。", color: "#475569" },
+        "RESOURCE_KNOT": { title: "资源绳结", tags: ["#情报中枢", "#价值对齐"], desc: "你是活的人格地图。你不需要拥有资源，只需要重新排列组合它们，就能创造出巨大的杠杆效应。", truth: "你害怕失去连接，所以你总在不停地交换信息，哪怕这让你很疲惫。", quote: "我知道谁有你要的答案，但我需要一个理由告诉他。", color: "#fbbf24" },
+        "TRANSLATOR": { title: "跨维翻译官", tags: ["#信息对齐", "#沟通大师"], desc: "你能把专家的废话翻译成老板听得懂的钱。这种‘跨维沟通’能力，是任何高效组织的秘密心脏。", truth: "你在不同人面前有不同面孔，有时你也会忘了哪张脸才是真的你。", quote: "我不是在传话，我是在对齐我们各自的现实。", color: "#ec4899" },
+        "SILENT_OPERATOR": { title: "幕后操盘手", tags: ["#极致稳健", "#深藏不露"], desc: "你喜欢在暗处拨动开关。你对成功的‘隐忍感’让你能忍受长周期，最终收割属于你的那个沉默果实。", truth: "你的野心比谁都大，只是你把它藏在了波澜不惊的耐心下面。", quote: "等风来，不如在无风的地方挖一口井。", color: "#1e293b" },
+        "GARDENER": { title: "系统修剪师", tags: ["#长期主义", "#微小迭代"], desc: "你只信每天进步1%。你的潜质在于‘修剪’。你这种慢功夫，是抵抗焦虑时代最硬的盾牌。", truth: "你对‘快’有着本能的恐惧，总觉得烧钱出来的东西没有根。", quote: "时间是最好的过滤器，也是最贵的燃料。", color: "#65a30d" },
+        "ZERO_CRUSADER": { title: "零号冲锋手", tags: ["#绝对执行", "#无畏感"], desc: "你是那种不需要激励就能自发热的发动机。你的攻击性是任何团队在拓荒期最渴望的尖刀。", truth: "你最怕闲着。一旦停下来，你就会陷入自我怀疑的泥潭。", quote: "别废话，告诉我目标在哪，然后看我把它拿回来。", color: "#f43f5e" },
+        "BALANCE_SEEKER": { title: "平衡寻找者", tags: ["#中庸之道", "#全局博弈"], desc: "你追求和谐。你的潜质在于：在多方博弈中寻找平衡点，让所有人都能活着下桌。", truth: "你常被误解为没主见，其实你是为了保护那个随时会崩掉的大盘子。", quote: "赢家通吃是野蛮人的逻辑，共存才是文明的艺术。", color: "#94a3b8" }
+    };
+    const questions = [
+        { q: "你的灵魂动力源更像是？", a: "精密运行的冷逻辑", b: "滚烫跳跃的直觉" },
+        { q: "如果余生只能精进一种能力，你选？", a: "洞察人心的共情力", b: "重构世界的逻辑力" }
+    ];
 
-        function render(content) { document.getElementById('root').innerHTML = content; }
+    function render(c) { document.getElementById('root').innerHTML = c; }
+    function startAuth() {
+        render(`<div class="flex-1 flex flex-col justify-center animate-fade-in p-4 text-center">
+            <h2 class="text-xs tracking-[0.5em] mb-16 text-blue-500 font-bold">IDENTITY ACCESS</h2>
+            <div id="input-container" class="space-y-6">
+                <input id="code-input" type="text" placeholder="输入10位激活码" class="bg-transparent border-b-2 border-white/10 focus:border-blue-500 w-full py-4 text-center text-xl tracking-[0.2em] outline-none transition-all placeholder:text-white/10">
+                <p class="text-[9px] text-white/20 tracking-widest">请通过 zhihuixu 官方渠道获取通行凭证</p>
+            </div>
+            <button onclick="verifyProcess()" class="mt-20 w-full py-5 bg-blue-600 text-white rounded-2xl text-sm font-bold tracking-[0.6em] shadow-xl active:scale-95 transition-all">验证身份</button>
+            <button onclick="location.reload()" class="mt-10 text-[9px] text-white/20 tracking-widest uppercase underline underline-offset-8">← Back</button>
+        </div>`);
+    }
 
-        function startAuth() {
-            render(`
-                <div class="flex-1 flex flex-col justify-center animate-fade-in p-4 text-center">
-                    <h2 class="text-xs tracking-[0.5em] mb-16 text-blue-500 uppercase font-bold">Identity Access</h2>
-                    <div id="input-container" class="space-y-6">
-                        <input id="code-input" type="text" placeholder="请输入10位兑换码" 
-                            class="bg-transparent border-b-2 border-white/10 focus:border-blue-500 w-full py-4 text-center text-xl tracking-[0.2em] outline-none transition-all placeholder:text-white/10">
-                        <p class="text-[10px] text-white/20 tracking-widest">请通过 zhihuixu 官方渠道获取通行凭证</p>
+    function verifyProcess() {
+        const i = document.getElementById('code-input');
+        const c = i.value.trim().toUpperCase();
+        if(!c) { i.classList.add('shake'); alert("⚠️ 请输入兑换码"); setTimeout(()=>i.classList.remove('shake'),300); return; }
+        if(!validCodes.includes(c)) { i.classList.add('shake'); alert("❌ 兑换码错误或失效"); setTimeout(()=>i.classList.remove('shake'),300); return; }
+        showQuiz(0);
+    }
+
+    function showQuiz(idx) {
+        const q = questions[idx % questions.length];
+        const p = Math.round(((idx+1)/90)*100);
+        render(`<div class="flex-1 flex flex-col justify-center text-left p-4 fade-in">
+            <div class="w-full h-1 bg-white/10 rounded-full mb-8"><div class="h-full bg-blue-500 transition-all duration-500" style="width:${p}%"></div></div>
+            <div class="text-[8px] text-blue-500 mb-4 tracking-[0.4em] font-bold">PHASE ${idx+1} / 90</div>
+            <h2 class="text-2xl font-light mb-16 text-white italic">${q.q}</h2>
+            <div class="space-y-4">
+                <button onclick="handleAnswer(${idx})" class="w-full py-6 bg-white/5 border border-white/10 rounded-2xl text-xs tracking-widest hover:bg-white hover:text-black transition-all px-8 text-left">A. ${q.a}</button>
+                <button onclick="handleAnswer(${idx})" class="w-full py-6 bg-white/5 border border-white/10 rounded-2xl text-xs tracking-widest hover:bg-white hover:text-black transition-all px-8 text-left">B. ${q.b}</button>
+            </div>
+        </div>`);
+    }
+
+    function handleAnswer(idx) {
+        if(idx < 89) showQuiz(idx+1);
+        else {
+            render(`<div class="flex-1 flex flex-col items-center justify-center"><div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div><p class="mt-8 text-[10px] tracking-[0.4em] text-blue-500 animate-pulse">ZHIHUIXU ENGINE CALCULATING...</p></div>`);
+            setTimeout(showResult, 2500);
+        }
+    }
+
+    function showResult() {
+        // 演示逻辑：随机抽取一个性格展示
+        const keys = Object.keys(archetypes);
+        const result = archetypes[keys[Math.floor(Math.random()*keys.length)]];
+        render(`<div class="flex-1 flex flex-col items-center justify-center fade-in p-4">
+            <div id="card" class="w-72 aspect-[5/8] relative" style="perspective:1000px;" onclick="flip()">
+                <div id="card-inner" class="w-full h-full relative transition-transform duration-700 shadow-2xl" style="transform-style:preserve-3d;">
+                    <div class="absolute inset-0 glass-card rounded-3xl p-8 flex flex-col items-center" style="backface-visibility:hidden; border:2px solid ${result.color}44;">
+                        <div class="text-[8px] tracking-[0.4em] mb-2 font-bold" style="color:${result.color}">TALENT IDENTITY</div>
+                        <h3 class="text-3xl tracking-[0.3em] font-black mb-6 mt-12 text-center">${result.title}</h3>
+                        <div class="flex flex-wrap justify-center gap-2 mb-12">${result.tags.map(t=>`<span class="text-[9px] border border-white/20 px-3 py-1 rounded-full opacity-60">${t}</span>`).join('')}</div>
+                        <p class="mt-auto text-[11px] leading-loose text-white/40 italic px-4 text-center">“${result.quote}”</p>
+                        <div class="mt-8 text-[8px] opacity-20 italic">Curated by zhihuixu</div>
                     </div>
-                    <button id="verify-btn" onclick="verifyProcess()" class="mt-20 w-full py-5 bg-blue-600 text-white rounded-2xl text-sm font-bold tracking-[0.6em] shadow-xl shadow-blue-900/30 active:scale-95 transition-all">
-                        验证身份
-                    </button>
-                    <button onclick="location.reload()" class="mt-10 text-[9px] text-white/20 tracking-widest hover:text-white uppercase underline underline-offset-8">← BACK TO HOME</button>
+                    <div class="absolute inset-0 glass-card rounded-3xl p-8 flex flex-col" style="backface-visibility:hidden; transform:rotateY(180deg); border:2px solid ${result.color}44;">
+                        <h4 class="text-xs tracking-widest font-bold mb-6" style="color:${result.color}">深度觉醒指南</h4>
+                        <p class="text-[12px] leading-loose text-white/80 font-light text-justify">${result.desc}</p>
+                        <div class="mt-6 p-4 bg-white/5 rounded-xl border border-white/5">
+                            <p class="text-[9px] text-blue-400 mb-2 font-bold uppercase tracking-widest">主理人私房话</p>
+                            <p class="text-[10px] leading-relaxed text-white/50 italic">"${result.truth}"</p>
+                        </div>
+                    </div>
                 </div>
-            `);
-        }
-
-        function verifyProcess() {
-            const inputEl = document.getElementById('code-input');
-            const code = inputEl.value.trim().toUpperCase();
-            const container = document.getElementById('input-container');
-
-            // 1. 拦截空输入
-            if (!code) {
-                inputEl.classList.add('shake');
-                alert("⚠️ 请输入兑换码以开启测试");
-                setTimeout(() => inputEl.classList.remove('shake'), 300);
-                return;
-            }
-
-            // 2. 拦截错误输入
-            if (!validCodes.includes(code)) {
-                inputEl.classList.add('shake');
-                alert("❌ 兑换码错误或已失效\n请联系 zhihuixu 获取最新凭证");
-                setTimeout(() => inputEl.classList.remove('shake'), 300);
-                return;
-            }
-
-            // 3. 验证成功
-            showQuiz(0);
-        }
-
-        function showQuiz(idx) {
-            render(`<div class="flex-1 flex flex-col justify-center text-left p-4 fade-in">
-                <div class="text-[8px] text-blue-500 mb-8 tracking-[0.4em] font-mono uppercase font-bold">Phase 01 / 90</div>
-                <h2 class="text-2xl font-light leading-snug mb-16 text-white italic">你的灵魂动力源更像是？</h2>
-                <div class="space-y-4">
-                    <button onclick="next()" class="w-full py-6 bg-white/5 border border-white/10 rounded-2xl text-xs tracking-widest hover:bg-white hover:text-black transition-all px-8 text-left">精密运行的冷逻辑</button>
-                    <button onclick="next()" class="w-full py-6 bg-white/5 border border-white/10 rounded-2xl text-xs tracking-widest hover:bg-white hover:text-black transition-all px-8 text-left">滚烫跳跃的直觉</button>
-                </div>
-            </div>`);
-        }
-        function next() { alert('激活成功！主理人正在为您加载...'); location.reload(); }
-    </script>
+            </div>
+            <p class="mt-8 text-[10px] text-white/30 tracking-[0.4em] animate-pulse uppercase">点击翻转查看深度解析</p>
+            <button onclick="location.reload()" class="mt-8 text-[10px] text-white/20 uppercase underline underline-offset-8">重新测试</button>
+        </div>`);
+    }
+    function flip() { const i = document.getElementById('card-inner'); i.style.transform = i.style.transform === 'rotateY(180deg)' ? 'rotateY(0deg)' : 'rotateY(180deg)'; }
+</script>
 </body>
 </html>
