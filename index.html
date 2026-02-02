@@ -10,26 +10,15 @@
         body { background: #000; color: #fff; font-family: 'Noto+Sans+SC', sans-serif; overflow: hidden; margin: 0; }
         .gradient-bg { background: radial-gradient(circle at 50% -10%, #1e3a8a 0%, #000 85%); height: 100vh; }
         
-        /* 3D 卡片动效 */
         .card-container { perspective: 1200px; width: 310px; height: 460px; margin-top: 20px; }
-        .card-inner { 
-            position: relative; width: 100%; height: 100%; 
-            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
-            transform-style: preserve-3d; cursor: pointer;
-        }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; cursor: pointer; }
         .card-inner.is-flipped { transform: rotateY(180deg); }
-        .card-face { 
-            position: absolute; inset: 0; backface-visibility: hidden; 
-            border-radius: 32px; border: 1px solid rgba(255,255,255,0.15);
-            background: rgba(255,255,255,0.03); backdrop-filter: blur(25px);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px;
-        }
+        .card-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 32px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.03); backdrop-filter: blur(25px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
         .card-back { transform: rotateY(180deg); background: rgba(255,255,255,0.05); }
         
-        /* UI 组件 */
         .btn-choice { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
         .btn-choice:active { background: #fff; color: #000; transform: scale(0.98); }
-        .progress-bar { height: 2px; background: rgba(255,255,255,0.1); overflow: hidden; }
+        .progress-bar { height: 2px; background: rgba(255,255,255,0.1); }
         .progress-fill { height: 100%; background: #3b82f6; box-shadow: 0 0 10px #3b82f6; transition: width 0.4s; }
         .fade-in { animation: fadeIn 0.6s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -48,20 +37,17 @@
     let fullBank = null;
     let currentIdx = 0;
     let scores = { L: 0, E: 0, A: 0, V: 0 };
-    let answeredIds = new Set();
-    let userTrait = "";
+    let answeredIds = [];
+    let activeCode = ""; // 当前登录的码
 
     function render(h) { document.getElementById('root').innerHTML = h; }
 
-    // 初始化加载
     async function init() {
         try {
             const res = await fetch(CONFIG.questionsPath);
             fullBank = await res.json();
             showHome();
-        } catch(e) { 
-            render(`<div class='h-full flex items-center justify-center text-red-400 text-[10px] tracking-widest uppercase'>Error: 资源加载失败</div>`); 
-        }
+        } catch(e) { render(`<div class='h-full flex items-center justify-center text-red-400 text-xs tracking-widest uppercase'>资源加载失败</div>`); }
     }
 
     function showHome() {
@@ -69,9 +55,9 @@
             <div class="flex-1 flex flex-col justify-between py-16 fade-in text-center">
                 <div class="mt-10">
                     <h1 class="text-4xl font-black tracking-[0.5em] mb-4">天赋图谱</h1>
-                    <p class="text-[9px] text-white/20 tracking-[0.4em] uppercase">90-Step Dynamic Probing System</p>
+                    <p class="text-[9px] text-white/20 tracking-[0.4em] uppercase">Individual Probing System</p>
                 </div>
-                <button onclick="showAuth()" class="w-full py-6 bg-white text-black font-bold rounded-2xl tracking-[0.8em] text-sm shadow-xl">激活授权</button>
+                <button onclick="showAuth()" class="w-full py-6 bg-white text-black font-bold rounded-2xl tracking-[0.8em] text-sm">激活或继续</button>
             </div>
         `);
     }
@@ -80,60 +66,66 @@
         render(`
             <div class="flex-1 flex flex-col justify-center fade-in px-4">
                 <input id="authInput" type="text" placeholder="ENTER CODE" class="bg-transparent border-b border-white/20 w-full py-6 text-center text-xl tracking-[0.3em] outline-none mb-16 uppercase focus:border-blue-500 transition-colors">
-                <button id="verifyBtn" onclick="handleVerify()" class="w-full py-6 bg-blue-600 rounded-2xl font-bold tracking-[0.5em] text-xs">立即核销</button>
+                <button id="verifyBtn" onclick="handleVerify()" class="w-full py-6 bg-blue-600 rounded-2xl font-bold tracking-[0.5em] text-xs">验证身份</button>
             </div>
         `);
     }
 
-    // 核心核销逻辑
+    // --- 核心：带断点续传的验证逻辑 ---
     async function handleVerify() {
         const input = document.getElementById('authInput').value.trim().toUpperCase();
         const btn = document.getElementById('verifyBtn');
-        let used = JSON.parse(localStorage.getItem('atlas_used') || "[]");
-
         if(!input) return;
-        if(used.includes(input)) return alert("❌ 该授权码已被使用");
 
         try {
-            btn.innerText = "正在验证授权...";
+            btn.innerText = "正在验证...";
             btn.disabled = true;
+            
+            // 1. 获取码库
             const res = await fetch(CONFIG.codesPath);
             const data = await res.json();
             
             if(data.active_codes.includes(input)) {
-                used.push(input);
-                localStorage.setItem('atlas_used', JSON.stringify(used));
+                activeCode = input;
+                // 2. 检查本地是否有该码的进度记录
+                const savedProgress = JSON.parse(localStorage.getItem(`progress_${activeCode}`));
+                
+                if(savedProgress) {
+                    // 恢复进度
+                    scores = savedProgress.scores;
+                    currentIdx = savedProgress.currentIdx;
+                    answeredIds = savedProgress.answeredIds;
+                    alert(`✅ 欢迎回来，已为您跳转至第 ${currentIdx + 1} 题`);
+                }
                 startQuiz();
             } else {
                 alert("⚠️ 授权码无效");
-                btn.innerText = "立即核销";
-                btn.disabled = false;
+                btn.innerText = "验证身份"; btn.disabled = false;
             }
-        } catch(e) {
-            alert("无法链接验证服务器");
-            btn.disabled = false;
-        }
+        } catch(e) { alert("无法连接服务器"); btn.disabled = false; }
+    }
+
+    function saveProgress() {
+        const progress = { scores, currentIdx, answeredIds };
+        localStorage.setItem(`progress_${activeCode}`, JSON.stringify(progress));
     }
 
     function startQuiz() {
-        // 自适应抽题逻辑
         let pool;
         if(currentIdx < 30) {
             pool = fullBank.baseline;
         } else {
-            // 根据实时最高分切换库
             const top = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
             pool = fullBank[`deep_${top}`] || fullBank.baseline;
         }
 
-        // 随机抽取一个未回答的题目
-        const available = pool.filter(q => !answeredIds.has(q.id));
+        const available = pool.filter(q => !answeredIds.includes(q.id));
         const q = available[Math.floor(Math.random() * available.length)] || pool[0];
         
         render(`
             <div class="flex-1 flex flex-col fade-in">
                 <div class="progress-bar mb-12"><div class="progress-fill" style="width:${(currentIdx/CONFIG.totalSteps)*100}%"></div></div>
-                <div class="text-[10px] text-blue-500 font-bold mb-4 tracking-widest uppercase">Probe ${currentIdx+1}/${CONFIG.totalSteps}</div>
+                <div class="text-[10px] text-blue-500 font-bold mb-4 tracking-widest">Step ${currentIdx+1}/${CONFIG.totalSteps}</div>
                 <h2 class="text-xl font-light mb-16 leading-relaxed">${q.q}</h2>
                 <div class="space-y-4">
                     <button onclick='submitAnswer("${q.id}", ${JSON.stringify(q.a.s)})' class="btn-choice w-full py-6 rounded-2xl text-[11px] px-8 text-left leading-relaxed">${q.a.t}</button>
@@ -145,23 +137,27 @@
 
     function submitAnswer(id, s) {
         for(let k in s) scores[k] += s[k];
-        answeredIds.add(id);
+        answeredIds.push(id);
         currentIdx++;
+        
+        // 关键：每答一题自动保存进度
+        saveProgress();
+
         if(currentIdx < CONFIG.totalSteps) startQuiz();
         else showFinalLoading();
     }
 
     function showFinalLoading() {
-        render(`<div class="flex-1 flex flex-col items-center justify-center animate-pulse text-center"><div class="w-6 h-6 border border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div><p class="text-[9px] tracking-[0.6em] text-blue-400">正在通过 90 维数据锁定原型...</p></div>`);
-        setTimeout(showResult, 3000);
+        render(`<div class="flex-1 flex flex-col items-center justify-center animate-pulse text-center"><div class="w-6 h-6 border border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div><p class="text-[9px] tracking-[0.6em] text-blue-400">正在生成报告...</p></div>`);
+        setTimeout(showResult, 2500);
     }
 
     function showResult() {
         const top = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
         const meta = {
-            L: { t: "逻辑构造师", d: "你倾向于将世界还原为数字与逻辑。在极端混沌中，你依然能一眼识破系统的死穴。", c: "#3b82f6" },
+            L: { t: "逻辑构造师", d: "你倾向于将世界还原为数字与逻辑。在极端混沌中，你依然能一眼识破系统的漏洞。", c: "#3b82f6" },
             E: { t: "共情感知者", d: "你的天赋在于对人性的深度洞察。你能捕捉到空气中微弱的情绪涟漪，它是你的雷达。", c: "#10b981" },
-            A: { t: "权力博弈者", d: "你对秩序与支配有着近乎本能的渴望。结果是唯一的度量衡，规则只是你的工具。", c: "#f59e0b" },
+            A: { t: "权力博弈者", d: "你对秩序与支配有着近乎本能的渴望。结果是唯一的度量衡，规则只是工具。", c: "#f59e0b" },
             V: { t: "高维观测者", d: "你不属于任何具体的阵营。你站在更高的维度审视规则，预测那些尚未发生的坍塌。", c: "#8b5cf6" }
         }[top];
 
@@ -170,7 +166,6 @@
                 <div class="card-container" onclick="this.querySelector('.card-inner').classList.toggle('is-flipped')">
                     <div class="card-inner">
                         <div class="card-face">
-                            <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.05)_0%,transparent_75%)]"></div>
                             <div class="w-16 h-16 border border-dashed rounded-full flex items-center justify-center mb-8" style="border-color:${meta.c}">
                                 <div class="w-2 h-2 rounded-full animate-ping" style="background:${meta.c}"></div>
                             </div>
@@ -180,11 +175,11 @@
                         <div class="card-face card-back text-center">
                             <h4 class="text-[10px] font-bold mb-8 uppercase tracking-[0.4em]" style="color:${meta.c}">内核解构</h4>
                             <p class="text-xs leading-loose text-white/70 px-2">${meta.d}</p>
-                            <div class="mt-auto pt-8 border-t border-white/5 w-full text-[7px] opacity-20 uppercase tracking-[0.5em]">Auth: ${CONFIG.master || 'ZHIHUIXU'}</div>
+                            <div class="mt-auto pt-8 border-t border-white/5 w-full text-[7px] opacity-20 uppercase tracking-[0.5em]">Verified Code: ${activeCode}</div>
                         </div>
                     </div>
                 </div>
-                <p class="mt-10 text-[8px] text-white/20 tracking-[0.6em] uppercase animate-pulse underline underline-offset-8">Tap Card to Reveal</p>
+                <p class="mt-10 text-[8px] text-white/20 tracking-[0.6em] uppercase animate-pulse">Tap Card to Reveal</p>
             </div>
         `);
     }
