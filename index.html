@@ -6,166 +6,146 @@
     <title>天赋图谱 | Talent Atlas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@200;500;900&family=Playfair+Display:italic&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@200;500;900&display=swap');
         body { background: #000; color: #fff; font-family: 'Noto+Sans+SC', sans-serif; margin: 0; overflow: hidden; }
         
         .gradient-bg { 
-            background: radial-gradient(circle at 50% -10%, #1e3a8a 0%, #000 60%);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            background: radial-gradient(circle at 50% -10%, #1e3a8a 0%, #000 70%);
+            height: 100vh; display: flex; flex-direction: column;
         }
 
-        .main-title {
-            letter-spacing: 0.5em;
-            background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.5) 100%);
+        /* 核心价值高亮 */
+        .value-highlight {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-weight: 900;
+            font-weight: 700;
         }
 
-        /* 核心动效：流光按钮 */
         .cta-button {
-            position: relative;
-            background: #ffffff;
-            color: #000;
-            overflow: hidden;
-            font-weight: 600;
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-            box-shadow: 0 0 0 rgba(255,255,255,0);
+            background: #ffffff; color: #000;
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4);
+            font-weight: 600; transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        /* 呼吸光圈动画 */
-        .btn-glow {
-            animation: pulse-glow 3s infinite;
+        .cta-button:active { transform: scale(0.96); }
+
+        .glass-tag {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        /* 输入框抖动动画 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
-
-        /* 流光掠影效果 */
-        .cta-button::after {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -60%;
-            width: 20%;
-            height: 200%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
-            transform: rotate(30deg);
-            animation: shine 4s infinite;
-        }
-
-        @keyframes shine {
-            0% { left: -60%; }
-            20% { left: 120%; }
-            100% { left: 120%; }
-        }
-
-        .cta-button:active {
-            transform: scale(0.95);
-        }
-
-        /* 验证按钮：能量蓝色光感 */
-        .verify-btn {
-            background: #2563eb;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .verify-btn:active {
-            transform: translateY(2px);
-            filter: brightness(1.2);
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-        }
-
-        .fade-in { animation: fadeIn 1s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .shake { animation: shake 0.3s ease-in-out; border-bottom-color: #ef4444 !important; }
     </style>
 </head>
 <body class="gradient-bg">
     <div id="root" class="w-full max-w-md mx-auto flex flex-col h-full p-8">
         
-        <div id="home-view" class="flex flex-col h-full fade-in text-center">
-            <header class="pt-10 mb-8">
-                <h1 class="main-title text-4xl mb-2 ml-4">天赋图谱</h1>
-                <div class="text-[10px] text-white/40 italic mb-6 tracking-[0.2em] font-serif">
-                    Curated by <span class="text-white/70">zhihuixu</span>
-                </div>
-                <div class="h-[1px] w-8 bg-blue-500/50 mx-auto"></div>
+        <div id="home-view" class="flex flex-col h-full fade-in">
+            <header class="pt-8 mb-6 text-center">
+                <h1 style="letter-spacing: 0.5em;" class="text-4xl font-black mb-2 ml-4">天赋图谱</h1>
+                <div class="text-[10px] text-white/40 italic tracking-[0.2em] font-serif">Curated by zhihuixu</div>
             </header>
 
-            <div class="mb-10">
-                <button onclick="startAuth()" class="cta-button btn-glow w-full py-5 rounded-2xl text-base tracking-[0.6em] uppercase">
+            <section class="mb-10 text-center">
+                <p class="text-xl font-light leading-snug">
+                    抛弃标签，<span class="value-highlight">拆解你的底层动机。</span><br>
+                    发现那些被你忽略的<span class="value-highlight">昂贵潜质。</span>
+                </p>
+            </section>
+
+            <div class="flex justify-center space-x-3 mb-8">
+                <span class="glass-tag px-4 py-2 rounded-full text-[10px] tracking-widest text-white/70">⏱ 15 MINS</span>
+                <span class="glass-tag px-4 py-2 rounded-full text-[10px] tracking-widest text-white/70">📊 90 QUESTIONS</span>
+            </div>
+
+            <div class="mb-12">
+                <button onclick="startAuth()" class="cta-button w-full py-5 rounded-2xl text-base tracking-[0.8em] uppercase">
                     开启觉醒之旅
                 </button>
-                <div class="mt-4 flex justify-between px-2 text-[9px] text-white/30 tracking-[0.3em] font-medium uppercase">
-                    <span>90 Questions</span>
-                    <span>v2.0 Beta Edition</span>
+            </div>
+
+            <div class="flex-1 space-y-4 overflow-y-auto pr-1">
+                <div class="flex items-start space-x-3 text-white/60">
+                    <span class="text-blue-500 text-lg">✦</span>
+                    <p class="text-[12px] leading-relaxed">这不只是一份报告，更是主理人 zhihuixu 为你定制的个人使用手册。</p>
                 </div>
             </div>
 
-            <section class="flex-1 overflow-y-auto space-y-4 mb-6">
-                <div class="glass-card p-5 rounded-2xl text-left">
-                    <h4 class="text-blue-400 text-[10px] font-bold mb-2 tracking-widest uppercase">核心价值</h4>
-                    <p class="text-[12px] leading-relaxed text-white/80 font-light">
-                        通过 zhihuixu 构建的动态逻辑引擎，深度探测你的潜在特长，生成独一无二的赛博身份标识。
-                    </p>
-                </div>
-            </section>
-
-            <footer class="pt-6 border-t border-white/10 pb-4">
-                <div class="text-[9px] text-white/20 leading-relaxed space-y-2 text-center">
-                    <p>【免责声明】结果基于统计模型，仅供自我探索参考。</p>
-                    <p class="opacity-40">Created by zhihuixu | © 2026</p>
+            <footer class="pt-6 border-t border-white/10 pb-4 text-center">
+                <div class="text-[9px] text-white/20 leading-relaxed">
+                    <p>由逻辑引擎驱动，深度探测个体独特性</p>
+                    <p class="mt-1 opacity-40">Created by zhihuixu | © 2026</p>
                 </div>
             </footer>
         </div>
     </div>
 
     <script>
+        const validCodes = ["XU88888888", "ZHUIHUI666", "ADMIN123"]; // 你的白名单激活码
+
         function render(content) { document.getElementById('root').innerHTML = content; }
 
         function startAuth() {
             render(`
-                <div class="flex-1 flex flex-col justify-center fade-in text-center p-4">
+                <div class="flex-1 flex flex-col justify-center animate-fade-in p-4 text-center">
                     <h2 class="text-xs tracking-[0.5em] mb-16 text-blue-500 uppercase font-bold">Identity Access</h2>
-                    <div class="space-y-6">
-                        <input id="code-input" type="text" placeholder="输入10位激活码" 
-                            class="bg-transparent border-b-2 border-blue-900 focus:border-blue-500 w-full py-4 text-center text-xl tracking-[0.2em] outline-none transition-all placeholder:text-white/10">
-                        <p class="text-[9px] text-white/20 tracking-widest">请通过 zhihuixu 官方渠道获取通行凭证</p>
+                    <div id="input-container" class="space-y-6">
+                        <input id="code-input" type="text" placeholder="请输入10位兑换码" 
+                            class="bg-transparent border-b-2 border-white/10 focus:border-blue-500 w-full py-4 text-center text-xl tracking-[0.2em] outline-none transition-all placeholder:text-white/10">
+                        <p class="text-[10px] text-white/20 tracking-widest">请通过 zhihuixu 官方渠道获取通行凭证</p>
                     </div>
-                    <button onclick="showQuiz(0)" class="verify-btn mt-20 w-full py-4 text-white rounded-xl text-sm font-bold tracking-[0.6em] shadow-xl shadow-blue-900/30">
+                    <button id="verify-btn" onclick="verifyProcess()" class="mt-20 w-full py-5 bg-blue-600 text-white rounded-2xl text-sm font-bold tracking-[0.6em] shadow-xl shadow-blue-900/30 active:scale-95 transition-all">
                         验证身份
                     </button>
-                    <button onclick="location.reload()" class="mt-10 text-[9px] text-white/20 tracking-widest hover:text-white uppercase underline underline-offset-8 transition-all">← BACK TO HOME</button>
+                    <button onclick="location.reload()" class="mt-10 text-[9px] text-white/20 tracking-widest hover:text-white uppercase underline underline-offset-8">← BACK TO HOME</button>
                 </div>
             `);
         }
 
-        // 占位逻辑
-        function showQuiz(idx) {
-            render(`
-                <div class="flex-1 flex flex-col justify-center text-left p-4 fade-in">
-                    <div class="text-[8px] text-blue-500 mb-8 tracking-[0.4em] font-mono uppercase font-bold">Phase 01 / 90</div>
-                    <h2 class="text-2xl font-light leading-snug mb-16 text-white italic">你的灵魂动力源更像是？</h2>
-                    <div class="space-y-4 text-center">
-                        <button onclick="next()" class="w-full py-6 bg-white/5 border border-white/10 rounded-2xl text-xs tracking-[0.2em] hover:bg-white hover:text-black transition-all px-8 text-left">精密运行的冷逻辑</button>
-                        <button onclick="next()" class="w-full py-6 bg-white/5 border border-white/10 rounded-2xl text-xs tracking-[0.2em] hover:bg-white hover:text-black transition-all px-8 text-left">滚烫跳跃的直觉</button>
-                    </div>
-                </div>
-            `);
+        function verifyProcess() {
+            const inputEl = document.getElementById('code-input');
+            const code = inputEl.value.trim().toUpperCase();
+            const container = document.getElementById('input-container');
+
+            // 1. 拦截空输入
+            if (!code) {
+                inputEl.classList.add('shake');
+                alert("⚠️ 请输入兑换码以开启测试");
+                setTimeout(() => inputEl.classList.remove('shake'), 300);
+                return;
+            }
+
+            // 2. 拦截错误输入
+            if (!validCodes.includes(code)) {
+                inputEl.classList.add('shake');
+                alert("❌ 兑换码错误或已失效\n请联系 zhihuixu 获取最新凭证");
+                setTimeout(() => inputEl.classList.remove('shake'), 300);
+                return;
+            }
+
+            // 3. 验证成功
+            showQuiz(0);
         }
-        function next() { alert('激活成功！主理人 zhihuixu 正在为您加载核心算法...'); location.reload(); }
+
+        function showQuiz(idx) {
+            render(`<div class="flex-1 flex flex-col justify-center text-left p-4 fade-in">
+                <div class="text-[8px] text-blue-500 mb-8 tracking-[0.4em] font-mono uppercase font-bold">Phase 01 / 90</div>
+                <h2 class="text-2xl font-light leading-snug mb-16 text-white italic">你的灵魂动力源更像是？</h2>
+                <div class="space-y-4">
+                    <button onclick="next()" class="w-full py-6 bg-white/5 border border-white/10 rounded-2xl text-xs tracking-widest hover:bg-white hover:text-black transition-all px-8 text-left">精密运行的冷逻辑</button>
+                    <button onclick="next()" class="w-full py-6 bg-white/5 border border-white/10 rounded-2xl text-xs tracking-widest hover:bg-white hover:text-black transition-all px-8 text-left">滚烫跳跃的直觉</button>
+                </div>
+            </div>`);
+        }
+        function next() { alert('激活成功！主理人正在为您加载...'); location.reload(); }
     </script>
 </body>
 </html>
